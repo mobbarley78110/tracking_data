@@ -54,6 +54,7 @@ def upload(data):
             print('FAILED UPLOAD')
             print(row)
     cursor.commit()
+    clean_dates()
     return
 
 def upload_csv(url):
@@ -138,4 +139,4 @@ def upload_carrier():
         cursor.commit()
     return
 
-download_clean_dups_reup()
+clean_dates()

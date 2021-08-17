@@ -26,6 +26,33 @@ def delete_all():
     return
 
 
+def clean_dates():
+    cursor = conn.cursor()
+    cursor.execute(''' UPDATE tracking_data
+        SET ship_date = NULL
+        WHERE ship_date = '1900-01-01'
+    ''')
+    cursor.execute(''' UPDATE tracking_data
+        SET estimated_delivery_date = NULL
+        WHERE estimated_delivery_date = '1900-01-01'
+    ''')
+    cursor.execute(''' UPDATE tracking_data
+        SET delivery_date = NULL
+        WHERE delivery_date = '1900-01-01'
+    ''')
+    cursor.execute(''' UPDATE tracking_data
+        SET DESTINATION = NULL
+        WHERE DESTINATION = ', , '
+    ''')
+    cursor.execute(''' UPDATE tracking_data
+        SET ORIGIN = NULL
+        WHERE ORIGIN = ', , '
+    ''')
+
+    conn.commit()
+    return
+
+
 def upload(data):
     clean_for_upload(data)
     cursor = conn.cursor()
@@ -60,6 +87,7 @@ def upload(data):
             print('FAILED UPLOAD')
             print(row)
     cursor.commit()
+
     return
 
 
@@ -71,6 +99,7 @@ def download_clean_dups_reup():
     clean_for_upload(data)
     delete_all()
     upload(data)
+    clean_dates()
 
 
 def test_awb(awb):

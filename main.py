@@ -247,31 +247,5 @@ for row in new_awb.itertuples():
         print(row)
     cursor.commit()
 
-
-
 # cleaning 1900-01-01 dates
-cursor = conn.cursor()
-cursor.execute(''' UPDATE tracking_data
-    SET ship_date = NULL
-    WHERE ship_date = '1900-01-01'
-''')
-cursor.execute(''' UPDATE tracking_data
-    SET estimated_delivery_date = NULL
-    WHERE estimated_delivery_date = '1900-01-01'
-''')
-cursor.execute(''' UPDATE tracking_data
-    SET delivery_date = NULL
-    WHERE delivery_date = '1900-01-01'
-''')
-cursor.execute(''' UPDATE tracking_data
-    SET DESTINATION = NULL
-    WHERE DESTINATION = ', , '
-''')
-cursor.execute(''' UPDATE tracking_data
-    SET ORIGIN = NULL
-    WHERE ORIGIN = ', , '
-''')
-
-conn.commit()
-
-quit()
+clean_dates()
