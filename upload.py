@@ -139,4 +139,11 @@ def upload_carrier():
         cursor.commit()
     return
 
-clean_dates()
+
+def create_df_for_one_ups_awb(track_no):
+    df = pd.DataFrame([[track_no,'']], columns = ['TRACKING_NO','STATUS'] )
+    df['CLEAN_TRACKING_NO'] = df['TRACKING_NO'].apply(clean_awb)
+    return df
+
+
+run_ups_batch(create_df_for_one_ups_awb('1Z3424840340794246'))

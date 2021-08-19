@@ -138,7 +138,7 @@ def clean_for_upload(df):
     return
 
 
-def get_package_details(track_no):
+def get_package_details_fedex(track_no):
     try:
         header = {
             'Origin': 'https://www.fedex.com',
@@ -209,7 +209,7 @@ def run_fedex_batch(df):
         current_status = row.STATUS
         index = row.Index
         if (current_status != 'Delivered') & (current_status != 'no data found') & (current_status != 'Cancelled'):
-            temp_dict =  get_package_details(track_id)
+            temp_dict =  get_package_details_fedex(track_id)
             if temp_dict is not None:
                 df.loc[index, 'SHIP_DATE'] = temp_dict['ship_date']
                 df.loc[index, 'STATUS'] = temp_dict['status']
@@ -234,6 +234,8 @@ def run_fedex_batch(df):
 
 
 def run_ups_batch(df):
+    ''' To get tracking info from a full dataframe. Didnt create a function for
+    a single AWB since we want to open the chromedriver only once for the full list... '''
     driver = webdriver.Chrome('chromedriver.exe')
     for row in df.itertuples():
         prev_status = row.STATUS
@@ -292,18 +294,7 @@ def run_ups_batch(df):
                 #dest_city = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.ID, "stApp_txtAddress")))
                 dest_city = driver.find_element_by_id('stApp_txtAddress').text
                 dest_country = driver.find_element_by_id('stApp_txtCountry').text
-                #del_date = driver.find_element_by_id('st_App_PkgStsMonthNum').text
-                #status = driver.find_element_by_id('st_App_PkgStsLoc').text
                 signed_by = driver.find_element_by_id('stApp_valReceivedBy').text
-                #statuses = []
-                #for i in range(0,20):
-                #    try:
-                #        statuses.append(driver.find_element_by_id(f'stApp_ShpmtProg_LVP_milestone_name_{i}').text)
-                #    except:
-                #        continue
-                #last_status = statuses[-1]
-
-                # click on More Details to get some extra info
                 more_details = driver.find_element_by_id('st_App_View_Details')
                 try:
                     driver.execute_script("window.scrollTo(0, 100)")
@@ -345,8 +336,14 @@ def run_ups_batch(df):
                 # save all data in the dataTable
                 df.loc[index, 'STATUS'] = 'Delivered'
                 df.loc[index, 'SHIP_DATE'] = ship_date
-                df.loc[index, 'DELIVERY_DATE'] = del_date.split()[0]
-                df.loc[index, 'SIGNED_BY'] = signed_by.split()[0]
+                if len(del_date) == 0: # somehow sometines it dont get the del_date right?
+                    df.loc[index, 'DELIVERY_DATE'] = ''
+                else:
+                    df.loc[index, 'DELIVERY_DATE'] = del_date.split()[0]
+                if len(signed_by) == 0:
+                    df.loc[index, 'SIGNED_BY'] = ''
+                else:
+                    df.loc[index, 'SIGNED_BY'] = signed_by.split()[0]
                 df.loc[index, 'ORIGIN'] = shipped_from
                 df.loc[index, 'DESTINATION'] = dest_city + ', ' + dest_country
                 df.loc[index, 'LAST_UPDATE'] = today

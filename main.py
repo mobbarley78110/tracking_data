@@ -144,12 +144,12 @@ FROM INVC_HEADER WHERE DATE_CREATED > '2021-01-01' '''
 new_awb = new_awb.append(pd.read_sql(sql_query, conn))
 
 # stock
-sql_query = '''
-SELECT DISTINCT AIRWAY_BILL as TRACKING_NO,
-STM_AUTO_KEY as SOURCE_PK,
-'STOCK' as SOURCE_TABLE
-FROM STOCK WHERE REC_DATE > '2021-01-01' '''
-new_awb = new_awb.append(pd.read_sql(sql_query, conn))
+# sql_query = '''
+# SELECT DISTINCT AIRWAY_BILL as TRACKING_NO,
+# STM_AUTO_KEY as SOURCE_PK,
+# 'STOCK' as SOURCE_TABLE
+# FROM STOCK WHERE REC_DATE > '2021-01-01' '''
+# new_awb = new_awb.append(pd.read_sql(sql_query, conn))
 
 # exchanges
 sql_query = '''
