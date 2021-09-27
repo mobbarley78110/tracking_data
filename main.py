@@ -8,7 +8,7 @@ import time
 import datetime as dt
 from functions import *
 
-today = dt.datetime.today()
+today = dt.datetime.today().date()
 conn = pyodbc.connect('DRIVER=SQL Server;SERVER=QSQL;')
 pd.options.mode.chained_assignment = None
 
@@ -18,11 +18,10 @@ sql = ''' SELECT * FROM tracking_data '''
 tracking_data = pd.read_sql(sql, conn)
 tracking_data['CLEAN_TRACKING_NO'] = tracking_data['TRACKING_NO'].apply(clean_awb)
 print('total data lenght: ' + str(len(tracking_data)))
+
 # create list of awb to update for Fedex and run batch
 update_fdx = tracking_data[(~tracking_data['STATUS'].isin(['Delivered','no data found','Cancelled']))
                             & (tracking_data['CARRIER'] == 'FEDEX')]
-#_update_fdx = update_fdx[['CLEAN_TRACKING_NO','STATUS']].copy()
-#_update_fdx.drop_duplicates(subset ='CLEAN_TRACKING_NO', inplace = True)
 print('updating ' + str(len(update_fdx)) + ' fedex records')
 
 run_fedex_batch(update_fdx)
@@ -33,8 +32,6 @@ update_ups = tracking_data[(tracking_data['STATUS'] != 'Delivered')
                             & (tracking_data['STATUS'] != 'Cancelled')
                             & (tracking_data['CARRIER'] == 'UPS')]
 
-#_update_ups = update_ups[['CLEAN_TRACKING_NO','STATUS']].copy()
-#_update_ups.drop_duplicates(subset ='CLEAN_TRACKING_NO', inplace = True)
 print('updating ' + str(len(update_ups)) + ' ups records')
 run_ups_batch(update_ups)
 
@@ -142,14 +139,6 @@ INH_AUTO_KEY as SOURCE_PK,
 'INVC_HEADER' as SOURCE_TABLE
 FROM INVC_HEADER WHERE DATE_CREATED > '2021-01-01' '''
 new_awb = new_awb.append(pd.read_sql(sql_query, conn))
-
-# stock
-# sql_query = '''
-# SELECT DISTINCT AIRWAY_BILL as TRACKING_NO,
-# STM_AUTO_KEY as SOURCE_PK,
-# 'STOCK' as SOURCE_TABLE
-# FROM STOCK WHERE REC_DATE > '2021-01-01' '''
-# new_awb = new_awb.append(pd.read_sql(sql_query, conn))
 
 # exchanges
 sql_query = '''

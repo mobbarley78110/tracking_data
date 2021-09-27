@@ -103,11 +103,10 @@ def download_clean_dups_reup():
 
 
 def test_awb(awb):
-    # fedex awb are 10, 12, or 34 digit long numbers
+    # fedex awb are 12 or 34 digit long numbers
     # ups awb are 18 digits long and start with '1Z'
-    if re.match(r'^[0-9]{10}$', awb):
-        return 'fedex'
-    elif re.match(r'^[0-9]{12}$', awb):
+    # be careful not to pull DHL ones that are 11 digits long
+    if re.match(r'^[0-9]{12}$', awb):
         return 'fedex'
     elif re.match(r'^[0-9]{34}$', awb):
         return 'fedex'
@@ -395,3 +394,46 @@ def run_ups_batch(df):
 
     driver.close()
     return
+
+
+def clean_bad_awb():
+    sql = '''
+    SELECT distinct tracking_no
+    FROM tracking_data
+    WHERE status <> 'no data found' '''
+    data = pd.read_sql(sql, conn)
+    cursor = conn.cursor()
+    for awb in data.itertuples():
+        cawb = clean_awb(awb.tracking_no)
+        if len(cawb) in [12, 15, 34, 18]:
+            continue
+        else:
+            sql = f'''
+            UPDATE tracking_data
+            SET status = 'no data found',
+                ship_date = NULL,
+                estimated_delivery_date = NULL,
+                delivery_date = NULL,
+                signed_by = NULL,
+                last_update = {today},
+                carrier = NULL,
+                destination = NULL,
+                origin = NULL
+            WHERE TRACKING_NO = '{str(awb.tracking_no)}'
+            '''
+            cursor.execute(sql)
+    cursor.commit()
+
+
+def clean_carrier():
+    cursor = conn.cursor()
+    sql = '''
+    UPDATE tracking_data
+    SET carrier = NULL
+    WHERE carrier = 'to delete'
+    '''
+    cursor.execute(sql)
+    cursor.commit()
+
+
+clean_bad_awb()
