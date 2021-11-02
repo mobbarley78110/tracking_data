@@ -175,7 +175,7 @@ _new_awb['STATUS'] = None
 print('new awb to run')
 print(_new_awb['VALID_AWB'].value_counts())
 
-# create a table with the no match AWBs
+# create a table with the no match AWBs regex
 _new_no_match = _new_awb[_new_awb['VALID_AWB'] == 'no match'][['CLEAN_TRACKING_NO','STATUS']]
 _new_no_match['STATUS'] = 'no data found'
 _new_no_match['LAST_UPDATE'] = today
@@ -238,3 +238,6 @@ for row in new_awb.itertuples():
 
 # cleaning 1900-01-01 dates
 clean_dates()
+
+# remove dupes
+download_clean_dups_reup()

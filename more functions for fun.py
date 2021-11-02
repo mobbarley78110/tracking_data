@@ -213,4 +213,15 @@ def delete_blank_lines():
     cursor.commit()
     return
 
-delete_blank_lines()
+
+def clean_weird_dates():
+    cursor = conn.cursor()
+    sql = f"""
+    UPDATE tracking_data
+    SET last_update = '2021-01-01'
+    WHERE last_update = '1905-06-09'
+    """
+    cursor.execute(sql)
+    cursor.commit()
+
+clean_weird_dates()
