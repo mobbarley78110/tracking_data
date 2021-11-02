@@ -396,44 +396,14 @@ def run_ups_batch(df):
     return
 
 
-def clean_bad_awb():
-    sql = '''
-    SELECT distinct tracking_no
-    FROM tracking_data
-    WHERE status <> 'no data found' '''
-    data = pd.read_sql(sql, conn)
+def clean_carrier_name():
     cursor = conn.cursor()
-    for awb in data.itertuples():
-        cawb = clean_awb(awb.tracking_no)
-        if len(cawb) in [12, 15, 34, 18]:
-            continue
-        else:
-            sql = f'''
-            UPDATE tracking_data
-            SET status = 'no data found',
-                ship_date = NULL,
-                estimated_delivery_date = NULL,
-                delivery_date = NULL,
-                signed_by = NULL,
-                last_update = {today},
-                carrier = NULL,
-                destination = NULL,
-                origin = NULL
-            WHERE TRACKING_NO = '{str(awb.tracking_no)}'
-            '''
-            cursor.execute(sql)
-    cursor.commit()
-
-
-def clean_carrier():
-    cursor = conn.cursor()
-    sql = '''
+    # FEDEX FIRST
+    sql = f"""
     UPDATE tracking_data
-    SET carrier = NULL
-    WHERE carrier = 'to delete'
-    '''
+    SET carrier = 'FEDEX'
+    WHERE STATUS in ('Cancelled','Delivered','In transit','Label created')
+      AND (carrier = '' or carrier is null) AND TRACKING_NO not like '%1Z%'
+    """
     cursor.execute(sql)
     cursor.commit()
-
-
-clean_bad_awb()

@@ -66,10 +66,10 @@ print('pull new awb')
 # - po:
 # - ro:
 # - invoices:   both
-# - stock:      airwaybill
 # - exchanges:  tracking
 # we are not pulling data from:
 # - so (no awb fields found)
+# - stock (they are repeated from Receivers)
 new_awb = pd.DataFrame()
 
  # shippers (header only)
